@@ -1,4 +1,10 @@
 <html lang="en">
+<!-- Simulando erro para demonstração no console -->
+<script>
+    // Erro intencional: variável não declarada
+    console.log(varivelInexistente);
+</script>
+<link rel="stylesheet" href="css/arquivo-inexistente.css">
 
 <head>
     <meta charset="UTF-8">
@@ -22,9 +28,11 @@
             <img src="./img/logo.png" alt="Logo Ebac">
             <nav>
                 <ul>
-                    <li class="menu-um"><a href="http://google.com" target="blank">Menu 1</a></li>
-                    <li id="menu-dois"><a href="http://linkedin.com">Menu 2</a></li>
-                    <li><a href="http://instagram.com">Menu 3</a></li>
+                    <li class="menu-um"><a href="http://google.com" target="_blank" rel="noopener noreferrer">Menu 1</a>
+                    </li>
+                    <li id="menu-dois"><a href="http://linkedin.com" target="_blank" rel="noopener noreferrer">Menu
+                            2</a></li>
+                    <li><a href="http://instagram.com" target="_blank" rel="noopener noreferrer">Menu 3</a></li>
                 </ul>
             </nav>
         </header>
@@ -38,16 +46,107 @@
 
     <div id="form">
         <h2>Preencha o formulário abaixo</h2>
-        <form action="https://ebaconline.com.br/blog">
+        <form onsubmit="alert('Formulário enviado com sucesso!'); return false;">
             <label for="nome">Digite seu nome:</label>
             <input type="text" name="nome" id="nome">
             <label for="email">Digite seu email:</label>
             <input type="email" name="email" id="email">
-            <label for="email">Quer receber conteúdos da EBAC?</label>
-            <input type="radio" name="opcao" value="nao" id="like">Não
-            <input type="radio" name="opcao" value="sim" id="like">Sim
+            <label>Quer receber conteúdos da EBAC?</label>
+            <input type="radio" name="opcao" value="nao" id="opt-nao">Não
+            <input type="radio" name="opcao" value="sim" id="opt-sim">Sim
             <input type="submit" value="Enviar" class="btn-enviar">
         </form>
+
+        <script>
+            // ====== Rascunho de formulário (sessionStorage) ======
+            const nomeEl = document.getElementById('nome');
+            const emailEl = document.getElementById('email');
+
+            nomeEl.addEventListener('input', function () {
+                sessionStorage.setItem('draft:nome', this.value);
+            });
+
+            emailEl.addEventListener('input', function () {
+                sessionStorage.setItem('draft:email', this.value);
+            });
+
+            // ====== Preferência de newsletter (localStorage) ======
+            document.querySelectorAll('input[name="opcao"]').forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    localStorage.setItem('pref:newsletter', this.value);
+                });
+            });
+
+            // ====== Recuperar dados ao carregar a página ======
+            window.addEventListener('load', function () {
+                // Rascunho (sessionStorage)
+                const draftNome = sessionStorage.getItem('draft:nome');
+                const draftEmail = sessionStorage.getItem('draft:email');
+                if (draftNome) nomeEl.value = draftNome;
+                if (draftEmail) emailEl.value = draftEmail;
+
+                // Preferência (localStorage)
+                const pref = localStorage.getItem('pref:newsletter');
+                if (pref === 'sim' || pref === 'nao') {
+                    const opt = document.querySelector(`input[name="opcao"][value="${pref}"]`);
+                    if (opt) opt.checked = true;
+                }
+            });
+
+            // ====== Exemplo de uso de cookies ======
+            // Helpers básicos
+            function setCookie(name, value, days = 30) {
+                document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Max-Age=${days * 86400}; Path=/; SameSite=Lax`;
+            }
+            function getCookie(name) {
+                return document.cookie.split('; ').reduce((acc, pair) => {
+                    const [k, v] = pair.split('=');
+                    acc[decodeURIComponent(k)] = decodeURIComponent(v || '');
+                    return acc;
+                }, {})[name];
+            }
+
+            // Exemplo: definir idioma e região
+            setCookie('lng', 'pt-BR', 30);
+            setCookie('region', 'BR', 30);
+
+            // Aplicar imediatamente no front (opcional)
+            document.documentElement.lang = getCookie('lng') || 'pt-BR';
+
+            // Detecta se está no GitHub Pages e define o path correto do cookie
+            const ON_PAGES = location.hostname.endsWith('github.io');
+            const COOKIE_PATH = ON_PAGES ? '/aula-html-ebac/' : '/';
+
+            function setCookie(name, value, days = 30, path = COOKIE_PATH) {
+                const maxAge = days * 86400;
+                const parts = [
+                    `${encodeURIComponent(name)}=${encodeURIComponent(value)}`,
+                    `Max-Age=${maxAge}`,
+                    `Path=${path}`,
+                    'SameSite=Lax'
+                ];
+                if (location.protocol === 'https:') parts.push('Secure'); // Pages é https
+                document.cookie = parts.join('; ');
+            }
+
+            function getCookie(name) {
+                const map = document.cookie.split('; ').reduce((acc, pair) => {
+                    const [k, v] = pair.split('=');
+                    acc[decodeURIComponent(k)] = decodeURIComponent(v || '');
+                    return acc;
+                }, {});
+                return map[name];
+            }
+
+            // Define e lê
+            setCookie('lng', 'pt-BR', 30);
+            setCookie('region', 'BR', 30);
+            console.log('document.cookie =>', document.cookie);
+
+            // Aplica imediatamente no <html lang="...">
+            document.documentElement.lang = getCookie('lng') || 'pt-BR';
+
+        </script>
     </div>
 </body>
 
